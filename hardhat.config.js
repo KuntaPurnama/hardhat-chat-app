@@ -1,6 +1,8 @@
 require("@nomicfoundation/hardhat-toolbox")
-require("./tasks")
 require("dotenv").config()
+require("hardhat-deploy")
+require("@nomiclabs/hardhat-waffle")
+require("solidity-coverage")
 
 const COMPILER_SETTINGS = {
     optimizer: {
@@ -16,12 +18,8 @@ const MAINNET_RPC_URL =
     process.env.MAINNET_RPC_URL ||
     process.env.ALCHEMY_MAINNET_RPC_URL ||
     "https://eth-mainnet.alchemyapi.io/v2/your-api-key"
-const POLYGON_MAINNET_RPC_URL =
-    process.env.POLYGON_MAINNET_RPC_URL || "https://polygon-mainnet.alchemyapi.io/v2/your-api-key"
 const SEPOLIA_RPC_URL =
     process.env.SEPOLIA_RPC_URL;
-const MUMBAI_RPC_URL =
-    process.env.MUMBAI_RPC_URL || "https://polygon-mumbai.g.alchemy.com/v2/your-api-key"
 const PRIVATE_KEY = process.env.PRIVATE_KEY
 // optional
 const MNEMONIC = process.env.MNEMONIC || "Your mnemonic"
@@ -29,7 +27,6 @@ const FORKING_BLOCK_NUMBER = parseInt(process.env.FORKING_BLOCK_NUMBER) || 0
 
 // Your API key for Etherscan, obtain one at https://etherscan.io/
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || "Your etherscan API key"
-const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || "Your polygonscan API key"
 const REPORT_GAS = process.env.REPORT_GAS || false
 
 /** @type import('hardhat/config').HardhatUserConfig */
@@ -80,16 +77,6 @@ module.exports = {
             //   },
             chainId: 1,
         },
-        polygon: {
-            url: POLYGON_MAINNET_RPC_URL,
-            accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
-            chainId: 137,
-        },
-        mumbai: {
-            url: MUMBAI_RPC_URL,
-            accounts: PRIVATE_KEY !== undefined ? [PRIVATE_KEY] : [],
-            chainId: 80001,
-        },
     },
     defaultNetwork: "hardhat",
     etherscan: {
@@ -98,8 +85,6 @@ module.exports = {
             // npx hardhat verify --list-networks
             sepolia: ETHERSCAN_API_KEY,
             mainnet: ETHERSCAN_API_KEY,
-            polygon: POLYGONSCAN_API_KEY,
-            polygonMumbai: POLYGONSCAN_API_KEY,
         },
     },
     gasReporter: {
@@ -128,5 +113,14 @@ module.exports = {
     },
     mocha: {
         timeout: 300000, // 300 seconds max for running tests
+    },
+    namedAccounts: {
+        deployer: {
+            default: 0, // here this will by default take the first account as deployer
+            1: 0, // similarly on mainnet it will take the first account as deployer. Note though that depending on how hardhat network are configured, the account 0 on one network can be different than on another
+        },
+        player: {
+            default: 1,
+        },
     },
 }
